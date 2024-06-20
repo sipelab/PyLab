@@ -2,16 +2,15 @@
 pylab base module.
 
 This is the principal module of the pylab project.
-here you put your main classes and objects.
 
-Be creative! do whatever you want!
-
-If you want to replace this with a Flask application run:
-
-    $ make init
-
-and then choose `flask` as template.
 """
 
 # example constant variable
 NAME = "pylab"
+
+def launchWidefield():
+    """
+    Launch the widefield GUI.
+    """
+    print("Launching widefield GUI...")
+    
