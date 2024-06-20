@@ -1,7 +1,9 @@
 """CLI interface for pylab project.
 """
 import click
-import matlab.engine
+import pycromanager
+import numpy as np
+import pylab.camera
 
 def main():  # pragma: no cover
     """
@@ -10,5 +12,5 @@ def main():  # pragma: no cover
     """
 
 
-    click.echo("This will do something")
+    print("This will do something")
 
