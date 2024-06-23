@@ -4,6 +4,7 @@ import click
 import pycromanager
 import numpy as np
 import pylab.camera
+import pylab.utils
 
 def main():  # pragma: no cover
     """

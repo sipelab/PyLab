@@ -1,7 +1,8 @@
 import serial.tools.list_ports
 import requests
 import serial.tools.list_ports
-
+import nidaqmx
+from nidaqmx.constants import AcquisitionType
 
 ### Utility functions for querying serial ports and USB IDs ###
 
@@ -22,8 +23,6 @@ def list_serial_ports():
     for port in ports:
         print(f"Device: {port.device}, Description: {port.description}, HWID: {port.hwid}")
 
-if __name__ == "__main__":
-    list_serial_ports()
 
 
 def download_usb_ids():
@@ -83,3 +82,25 @@ def list_serial_ports(usb_ids):
             print(f"Device: {port.device}, Description: {port.description}, Vendor: {vendor}, Product: {product}")
         else:
             print(f"Device: {port.device}, Description: {port.description}, HWID: {port.hwid}")
+
+### NI-DAQ utility functions ###
+
+def list_nidaq_devices():
+    """List all connected NI-DAQ devices."""
+    system = nidaqmx.system.System.local()
+    return [device.name for device in system.devices]
+
+def read_analog_input(device_name, channel='ai0'):
+    """Read a single analog input from a specified channel."""
+    with nidaqmx.Task() as task:
+        task.ai_channels.add_ai_voltage_chan(f"{device_name}/{channel}")
+        return task.read()
+
+def test_nidaq_connection(device_name):
+    """Test connection to a specified NI-DAQ device."""
+    try:
+        with nidaqmx.Task() as task:
+            task.ai_channels.add_ai_voltage_chan(f"{device_name}/ai0")
+        return True
+    except nidaqmx.DaqError:
+        return False
