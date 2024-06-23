@@ -2,6 +2,8 @@
 
 #from pylab.cli import main  # pragma: no cover
 import click
+from pycromanager import Core
+
 
 '''
 This is the client terminal command line interface
@@ -16,17 +18,23 @@ def cli():
 
 @cli.command()
 #@click.option('--count', default=1, help='frame acquisitions')
-def devtest():
-    from pylab.camera import devTest
-    devTest()
+def start():
+    from pylab import camera
+    camera.launch()
+
 
 @cli.command()
 def record():
     """
-    Record a widefield acquisition.
+    Record a widefield acquisition.S
     """
     from pylab.camera import record
     record()
+
+@cli.command()
+def dev():
+
+
 
 ### Utility commands for querying serial ports and USB IDs ###
 @cli.command()
@@ -43,11 +51,6 @@ def get_devices():
 
 ### NI-DAQ commands ###
 from .utils import list_nidaq_devices, test_nidaq_connection, read_analog_input
-
-@click.group()
-def cli():
-    """PyLab NI-DAQ Interface"""
-    pass
 
 @click.command()
 def list_devices():
