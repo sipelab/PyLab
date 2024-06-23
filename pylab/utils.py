@@ -1,19 +1,10 @@
-# import matlab.engine  
-
-#   #The start_matlab function returns a Python object eng which enables you to pass data 
-#     # and call functions executed by MATLAB. Background=True starts the engine asynchronously.
-#     future = matlab.engine.start_matlab(background=True)
-#     eng = future.result()
-#     s = eng.genpath('C:/Users/SIPE_LAB/Desktop/desktop/WidefieldImager-master')
-#     eng.addpath(s, nargout=0)
-#     #eng.cd(r'C:/Users/SIPE_LAB/Desktop/desktop/WidefieldImager-master/WidefieldImager', nargout=0)
-#     #eng.addpath('C:/Users/SIPE_LAB/Desktop/desktop/WidefieldImager-master/WidefieldImager')
-
-#     eng.WidefieldImager(nargout=0)
-
 import serial.tools.list_ports
 import requests
 import serial.tools.list_ports
+
+
+### Utility functions for querying serial ports and USB IDs ###
+
 
 def list_serial_ports():
     """
@@ -33,8 +24,6 @@ def list_serial_ports():
 
 if __name__ == "__main__":
     list_serial_ports()
-
-
 
 
 def download_usb_ids():
@@ -78,7 +67,9 @@ def identify_device(vendor_id, product_id, usb_ids):
     return vendor, product
 
 def list_serial_ports(usb_ids):
-    
+    """
+    List all available serial ports on the system and identify connected USB devices
+    """
     ports = serial.tools.list_ports.comports()
     if not ports:
         print("No serial ports found.")
@@ -92,9 +83,3 @@ def list_serial_ports(usb_ids):
             print(f"Device: {port.device}, Description: {port.description}, Vendor: {vendor}, Product: {product}")
         else:
             print(f"Device: {port.device}, Description: {port.description}, HWID: {port.hwid}")
-
-if __name__ == "__main__":
-    usb_ids_content = download_usb_ids()
-    if usb_ids_content:
-        usb_ids = parse_usb_ids(usb_ids_content)
-        list_serial_ports(usb_ids)
