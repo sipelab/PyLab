@@ -31,12 +31,53 @@ def record():
     from pycromanager import Acquisition, multi_d_acquisition_events
     from pylab import base
 
+    print("Initializing Micro Manager Device configuration from config file..." + base.MM_CONFIG)
+    # Initialize the core object for Micromanager API
+
+    core = Core()
+    core.close()
+    core = Core()
+    # Load the system configuration file
+    core.load_system_configuration(base.MM_CONFIG)
+    
     with Acquisition(directory=base.SAVE_DIR) as acq:
         events = multi_d_acquisition_events(num_time_points=10)
         acq.acquire(events)
 
+    core.close()
 
 
+@cli.command()
+def record2():
+    """
+    Record a widefield acquisition.
+    """
+    from pycromanager import Acquisition, multi_d_acquisition_events, Core
+    from pylab import base
+
+    print("Initializing Micro Manager Device configuration from config file..." + base.MM_CONFIG)
+    core = None
+    try:
+        core = Core()
+        core.load_system_configuration(base.MM_CONFIG)
+        
+        with Acquisition(directory=base.SAVE_DIR) as acq:
+            events = multi_d_acquisition_events(num_time_points=10)
+            acq.acquire(events)
+    finally:
+        if core is not None:
+            core.close()
+
+@cli.command()
+def cleanup():
+    """
+    Cleanup the Micro Manager Core object.
+    """
+    from zmq import Context
+    context = Context()
+    
+    print("Closing ZeroMQ context.")
+    context.term()
 
 ### Utility commands for querying serial ports and USB IDs ###
 

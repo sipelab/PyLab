@@ -1,6 +1,5 @@
-import serial.tools.list_ports
+import serial.tools.list_ports #pip install pyserial
 import requests
-import serial.tools.list_ports
 import nidaqmx
 from nidaqmx.constants import AcquisitionType
 
