@@ -28,15 +28,18 @@ def record():
     """
     Record a widefield acquisition.S
     """
-    from pylab.camera import record
-    record()
+    from pycromanager import Acquisition, multi_d_acquisition_events
+    from pylab import base
 
-@cli.command()
-def dev():
+    with Acquisition(directory=base.SAVE_DIR) as acq:
+        events = multi_d_acquisition_events(num_time_points=10)
+        acq.acquire(events)
+
 
 
 
 ### Utility commands for querying serial ports and USB IDs ###
+
 @cli.command()
 def get_devices():
     """Download USB IDs and list all serial ports."""

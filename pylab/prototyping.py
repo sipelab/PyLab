@@ -97,41 +97,33 @@
 #     usb_ids_content = download_usb_ids()
 #     if usb_ids_content:
 #         usb_ids = parse_usb_ids(usb_ids_content)
-#         list_serial_ports(usb_ids)
+#         list_serial_ports(usb_ids)0
 
+import nidaqmx
+from nidaqmx.constants import LineGrouping
+import time
 
-import numpy as np
-import matplotlib.pyplot as plt
-from pycromanager import Core
-
-MM_CONFIG = r'C:/Users/SIPE_LAB/Desktop/240620_config_devJG.cfg'
-def launch_live_feed():
-    core = Core()  # Get the core MicroManager object
-
-    # Set up the camera for continuous acquisition
-    core.load_system_configuration(MM_CONFIG)
-    core.start_continuous_sequence_acquisition(1)  # 1 ms interval between images
-
-    plt.ion()  # Enable interactive mode for live updates
-    fig, ax = plt.subplots()  # Create a figure and axes for plotting
-    image = np.zeros((512, 512))  # Placeholder for the first image
-    im = ax.imshow(image, cmap='gray')  # Display the image
-
-    try:
+def generate_trigger_signal():
+    with nidaqmx.Task() as task:
+        task.do_channels.add_do_chan(
+            'Dev2/port0/line0',
+            line_grouping=LineGrouping.CHAN_PER_LINE
+        )
+        task.do_channels.add_do_chan(
+            'Dev2/port0/line1',
+            line_grouping=LineGrouping.CHAN_PER_LINE
+        )
+        
         while True:
-            if core.get_remaining_image_count() > 0:  # Check if there are images to retrieve
-                tagged_image = core.get_last_tagged_image()  # Get the next image
-                image = np.reshape(tagged_image.pix, newshape=[tagged_image.tags['Height'], tagged_image.tags['Width']])
-                im.set_data(image)  # Update the displayed image
-                plt.draw()
-                plt.pause(0.001)  # Short pause to allow GUI to update
-            else:
-                plt.pause(0.005)  # Wait a bit before checking for new images again
-    except KeyboardInterrupt:
-        # Stop acquisition when the user interrupts (e.g., by closing the plot or pressing Ctrl+C)
-        core.stop_continuous_sequence_acquisition()
-        plt.ioff()  # Turn off interactive mode
-        plt.show()  # Keep the window open until explicitly closed
+            # Generate a high signal on both lines
+            task.write([True, True])
+            print("Signal High from Dev2 on both lines")
+            time.sleep(1)  # Adjust as necessary
+            
+            # Generate a low signal on both lines
+            task.write([False, False])
+            print("Signal Low from Dev2 on both lines")
+            time.sleep(1)  # Adjust as necessary
 
 if __name__ == "__main__":
-    launch_live_feed()
+    generate_trigger_signal()
