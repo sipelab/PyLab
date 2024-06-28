@@ -16,11 +16,6 @@ def cli():
     """PyLabs Command Line Interface"""
     pass
 
-@cli.command()
-#@click.option('--count', default=1, help='frame acquisitions')
-def start():
-    from pylab import camera
-    camera.launch()
 
 
 @cli.command()
@@ -68,16 +63,6 @@ def record2():
         if core is not None:
             core.close()
 
-@cli.command()
-def cleanup():
-    """
-    Cleanup the Micro Manager Core object.
-    """
-    from zmq import Context
-    context = Context()
-    
-    print("Closing ZeroMQ context.")
-    context.term()
 
 ### Utility commands for querying serial ports and USB IDs ###
 
@@ -103,7 +88,7 @@ def list_devices():
     click.echo("\n".join(devices))
 
 @click.command()
-@click.argument('device_name')
+@click.option('--device_name', default='Dev2', help='Device name to test connection.')
 def test_connection(device_name):
     """Test connection to a specified NI-DAQ device."""
     if test_nidaq_connection(device_name):
@@ -111,16 +96,9 @@ def test_connection(device_name):
     else:
         click.echo(f"Failed to connect to {device_name}.")
 
-@click.command()
-@click.argument('device_name')
-def read_input(device_name):
-    """Read a single analog input from the device."""
-    value = read_analog_input(device_name)
-    click.echo(f"Analog input value: {value}")
-
 cli.add_command(list_devices)
 cli.add_command(test_connection)
-cli.add_command(read_input)
+
 
 if __name__ == "__main__":  # pragma: no cover
     cli()
