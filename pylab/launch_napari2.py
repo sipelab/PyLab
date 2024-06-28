@@ -53,7 +53,7 @@ def on_sequence_finished():
     # Send the trigger signal off when acquisition is complete
     trigger_signal_off()
     # Save the collected frames as a TIFF stack
-    save_tiff_stack(frames, save_dir, subject_id, session_id)
+    save_tiff_stack(frames, save_dir, protocol_id, subject_id, session_id)
 
 # Function to start the MDA sequence
 def start_acquisition():
@@ -119,6 +119,7 @@ class MyWidget(QWidget):
 
 # Function to start Napari with the custom widget
 def start_napari():
+    print("Starting Sipefield Napari Acquisition Interface...")
     viewer = Viewer()
     # Activate live view
     viewer.window.add_plugin_dock_widget('napari-micromanager')
