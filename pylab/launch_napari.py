@@ -20,35 +20,34 @@ class AcquisitionWidget(QWidget):
         layout.addWidget(self.start_button)
         self.setLayout(layout)
 
-def daq_trigger_signal():
-    '''Creates a trigger signal using a National Instruments DAQ device, sends a high (TRUE) and then low (FALSE) signal.'''
-    # Function to send a high (TRUE) signal 
-    def send_trigger_signal():
-        with nidaqmx.Task() as task:
-            task.do_channels.add_do_chan(
-                'Dev2/port0/line0') #Hardware dependent value; check the NIDAQ device for the correct port and line
-            task.do_channels.add_do_chan(
-                'Dev2/port0/line1') #Hardware dependent value; check the NIDAQ device for the correct port and line
-            
-            task.write([True, True])
-            print("Signal High from Dev2 on both lines")
 
-    # Function to send a low (FALSE) signal
-    def trigger_signal_off():
-        with nidaqmx.Task() as task:
-            task.do_channels.add_do_chan(
-                'Dev2/port0/line0')
-            task.do_channels.add_do_chan(
-                'Dev2/port0/line1')
-            
-            task.write([False, False])
-            print("Signal Low from Dev2 on both lines")
+def send_trigger_signal():
+    with nidaqmx.Task() as task:
+        task.do_channels.add_do_chan(
+            'Dev2/port0/line0') #Hardware dependent value; check the NIDAQ device for the correct port and line
+        task.do_channels.add_do_chan(
+            'Dev2/port0/line1') #Hardware dependent value; check the NIDAQ device for the correct port and line
+        
+        task.write([True, True])
+        print("Signal High from Dev2 on both lines")
+
+# Function to send a low (FALSE) signal
+def trigger_signal_off():
+    with nidaqmx.Task() as task:
+        task.do_channels.add_do_chan(
+            'Dev2/port0/line0')
+        task.do_channels.add_do_chan(
+            'Dev2/port0/line1')
+        
+        task.write([False, False])
+        print("Signal Low from Dev2 on both lines")
 
 
 # Function to start acquisition and send trigger signal
 def start_acquisition():
+    send_trigger_signal()  # Send trigger signal
     mmc.startSequenceAcquisition(100, 0, True)  # Example acquisition parameters
-    daq_trigger_signal()  # Send trigger signal
+    trigger_signal_off()  # Turn off trigger signal
 
 
 # Initialize the Napari viewer
