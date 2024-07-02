@@ -4,7 +4,7 @@ import tifffile
 import os
 from datetime import datetime
 from napari import Viewer, run
-from qtpy.QtWidgets import QPushButton, QWidget, QVBoxLayout, QLineEdit, QLabel, QFormLayout
+from qtpy.QtWidgets import QPushButton, QWidget, QVBoxLayout, QLineEdit, QLabel, QFormLayout, QProgressBar
 import nidaqmx
 
 
@@ -33,32 +33,13 @@ output_filepath = os.path.join(save_dir, 'high_framerate_prototyping.tiff')
 
 # Function to save frames as a TIFF stack with timestamps
 def save_tiff_stack(frames, save_dir, protocol, subject_id, session_id):
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S') # get current timestamp
     anat_dir = os.path.join(save_dir, f"{protocol}-{subject_id}", f"ses-{session_id}", "anat")
-    os.makedirs(anat_dir, exist_ok=True)
-    filename = os.path.join(anat_dir, f"sub-{subject_id}_ses-{session_id}_T1w_{timestamp}.tiff")
-    tifffile.imwrite(filename, np.array(frames))
+    os.makedirs(anat_dir, exist_ok=True) # create the directory if it doesn't exist
+    filename = os.path.join(anat_dir, f"sub-{subject_id}_ses-{session_id}_{timestamp}.tiff")
+    tifffile.imwrite(filename, np.array(frames)) # save the TIFF stack
     print(f"Saved TIFF stack: {filename}")
 
-
-# Function to start the MDA sequence
-def start_acquisition(num_frames, output_filepath):
-    mmc.startContinuousSequenceAcquisition(0)
-    time.sleep(1)  # Allow some time for the camera to start capturing images
-    
-    images = []
-    for i in range(num_frames):
-        while mmc.getRemainingImageCount() == 0:
-            time.sleep(0.01)  # Wait for images to be available
-            
-        if mmc.getRemainingImageCount() > 0 or mmc.isSequenceRunning():
-            image = mmc.popNextImage()
-            images.append(image)
-    
-    mmc.stopSequenceAcquisition()
-    
-    # Save images to a single TIFF stack
-    tifffile.imwrite(output_filepath, np.array(images), imagej=True)
 
 def trigger_decorator(func):
     def wrapper():
@@ -78,8 +59,8 @@ def trigger(state):
     # Function to send a low (FALSE) signal out of NIDAQ
     def trigger_signal_off():
         with nidaqmx.Task() as task:
-            task.do_channels.add_do_chan('Dev2/port0/line0')
-            task.do_channels.add_do_chan('Dev2/port0/line1')
+            task.do_channels.add_do_chan('Dev2/port0/line0')  # Hardware dependent value; check the NIDAQ device for the correct port and line
+            task.do_channels.add_do_chan('Dev2/port0/line1')  # Hardware dependent value; check the NIDAQ device for the correct port and line
             task.write([False, False])
             print("Signal Low from Dev2 on both lines")
 
@@ -88,13 +69,56 @@ def trigger(state):
     else:
         trigger_signal_off()
 
+# Function to start the MDA sequence
+def start_acquisition(num_frames, save_dir, viewer, progress_bar, protocol_id, subject_id, session_id):
+    
+    mmc.startContinuousSequenceAcquisition(0)
+    #time.sleep(1)  # TODO: Allow some time for the camera to start capturing images ???
+    trigger(True)
+
+    images = []
+    layer = None
+    for i in range(num_frames):
+        while mmc.getRemainingImageCount() == 0:
+            time.sleep(0.01)  # TODO: Wait for images to be available ???
+            
+        if mmc.getRemainingImageCount() > 0 or mmc.isSequenceRunning():
+            # TODO: Insert frame timing function for testing
+            image = mmc.popNextImage()
+            images.append(image)
+            if layer is None:
+                # Initialize the live-view layer on the first image
+                layer = viewer.add_image(image, name='Live View')
+            else:
+                layer.data = image  # Update the image layer with the new frame
+
+            # Update progress bar
+            progress_bar.setValue((i + 1) * 100 // num_frames)
+    
+    mmc.stopSequenceAcquisition()
+    trigger(False)
+    
+    # Save images to a single TIFF stack
+    # tifffile.imwrite(output_filepath, np.array(images), imagej=True)
+    save_tiff_stack(images, save_dir, protocol_id, subject_id, session_id)
+    # Load the final TIFF stack into the viewer
+    viewer.add_image(np.array(images), name='Final Acquisition')
+
+
+
 # Custom widget class for Napari
 class MyWidget(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, viewer, parent=None):
         super().__init__(parent)
         
+        self.viewer = viewer
         self.layout = QVBoxLayout(self)
         
+        # Progress bar
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setMaximum(100)
+        self.layout.addWidget(self.progress_bar)
+
         # Form layout for parameters
         self.form_layout = QFormLayout()
         
@@ -129,7 +153,10 @@ class MyWidget(QWidget):
         subject_id = self.subject_id_input.text()
         session_id = self.session_id_input.text()
         duration = int(self.duration_input.text())
-        trigger_decorator(start_acquisition(duration, output_filepath))
+        start_acquisition(duration, save_dir, 
+                            self.viewer, self.progress_bar,
+                            protocol_id, subject_id, session_id)
+        
 
     def test_trigger(self):
         trigger(True)
@@ -143,7 +170,7 @@ def start_napari():
     viewer = Viewer()
     # Activate live view
     viewer.window.add_plugin_dock_widget('napari-micromanager')
-    viewer.window.add_dock_widget(MyWidget(), area='right')
+    viewer.window.add_dock_widget(MyWidget(viewer), area='right')
     run()
 
 # Launch Napari with the custom widget

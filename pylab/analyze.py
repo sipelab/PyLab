@@ -57,7 +57,7 @@ def display_results(images, edges, labeled_image, regions):
 # Main analysis function
 def main():
     # Path to the TIFF stack
-    filepath = r'C:\dev\sipefield\devOutput\sub-002\ses-01\anat\sub-002_ses-01_T1w_20240628_000316.tiff'
+    filepath = r'D:\Mapping\Animals\sb07\D1-Baseline\01-Jul-2024\Frames_1_512_512_uint16_0001.tif'
     
     # Load the images
     images = load_tiff_stack(filepath)
