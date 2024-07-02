@@ -1,13 +1,12 @@
 from pymmcore_plus import CMMCorePlus
 import numpy as np
-import useq
 import tifffile
 import os
 from datetime import datetime
 from napari import Viewer, run
 from qtpy.QtWidgets import QPushButton, QWidget, QVBoxLayout, QLineEdit, QLabel, QFormLayout
-from napari_plugin_engine import napari_hook_implementation
 import nidaqmx
+
 
 import time
 
@@ -25,11 +24,12 @@ frames = []
 
 # Default parameters for file saving
 save_dir = SAVE_DIR
-protocol_id = "dev"
+protocol_id = "devTIFF"
 subject_id = "001"
 session_id = "01"
-fps = 60  # Default FPS
-duration = 60  # Default duration in seconds
+num_frame = 100
+duration = 100  # Default duration in seconds
+output_filepath = os.path.join(save_dir, 'high_framerate_prototyping.tiff')
 
 # Function to save frames as a TIFF stack with timestamps
 def save_tiff_stack(frames, save_dir, protocol, subject_id, session_id):
@@ -40,32 +40,25 @@ def save_tiff_stack(frames, save_dir, protocol, subject_id, session_id):
     tifffile.imwrite(filename, np.array(frames))
     print(f"Saved TIFF stack: {filename}")
 
-@mmc.mda.events.frameReady.connect  # decorator to connect to the frameReady event of the MDA sequence
-def on_frame(image: np.ndarray, event: useq.MDAEvent):
-    # Append each received frame to the frames list
-    frames.append(image)
-    print(
-        f"received frame: {image.shape}, {image.dtype} "
-        f"@ index {event.index}"
-    )
-
-@mmc.mda.events.sequenceFinished.connect
-def on_sequence_finished():
-    '''We want to turn off the trigger signal and save the collected frames as a TIFF stack'''
-    # Send the trigger signal off when acquisition is complete
-    trigger(False)
-    # Save the collected frames as a TIFF stack
-    save_tiff_stack(frames, save_dir, protocol_id, subject_id, session_id)
 
 # Function to start the MDA sequence
-def start_acquisition():
-    # Define your MDA sequence
-    total_frames = int(fps * duration)  # total number of frames to acquire
-    interval = total_frames  / float(fps)  # converts fps to interval in seconds
-    mda_sequence = useq.MDASequence(
-        time_plan={"interval": 0, "loops": duration}
-    )
-    mmc.run_mda(mda_sequence)
+def start_acquisition(num_frames, output_filepath):
+    mmc.startContinuousSequenceAcquisition(0)
+    time.sleep(1)  # Allow some time for the camera to start capturing images
+    
+    images = []
+    for i in range(num_frames):
+        while mmc.getRemainingImageCount() == 0:
+            time.sleep(0.01)  # Wait for images to be available
+            
+        if mmc.getRemainingImageCount() > 0 or mmc.isSequenceRunning():
+            image = mmc.popNextImage()
+            images.append(image)
+    
+    mmc.stopSequenceAcquisition()
+    
+    # Save images to a single TIFF stack
+    tifffile.imwrite(output_filepath, np.array(images), imagej=True)
 
 def trigger_decorator(func):
     def wrapper():
@@ -109,14 +102,12 @@ class MyWidget(QWidget):
         self.protocol_id_input = QLineEdit(protocol_id)
         self.subject_id_input = QLineEdit(subject_id)
         self.session_id_input = QLineEdit(session_id)
-        self.fps_input = QLineEdit(str(fps))
         self.duration_input = QLineEdit(str(duration))
         
         self.form_layout.addRow('Save Directory:', self.save_dir_input)
         self.form_layout.addRow('Protocol ID:', self.protocol_id_input)
         self.form_layout.addRow('Subject ID:', self.subject_id_input)
         self.form_layout.addRow('Session ID:', self.session_id_input)
-        self.form_layout.addRow('FPS:', self.fps_input)
         self.form_layout.addRow('Duration (seconds):', self.duration_input)
         
         self.layout.addLayout(self.form_layout)
@@ -132,14 +123,13 @@ class MyWidget(QWidget):
         self.layout.addWidget(self.button)
     
     def start_acquisition_with_params(self):
-        global save_dir, protocol_id, subject_id, session_id, fps, duration
+        global save_dir, protocol_id, subject_id, session_id, duration
         save_dir = self.save_dir_input.text()
         protocol_id = self.protocol_id_input.text()
         subject_id = self.subject_id_input.text()
         session_id = self.session_id_input.text()
-        fps = int(self.fps_input.text())
         duration = int(self.duration_input.text())
-        trigger_decorator(start_acquisition())
+        trigger_decorator(start_acquisition(duration, output_filepath))
 
     def test_trigger(self):
         trigger(True)
