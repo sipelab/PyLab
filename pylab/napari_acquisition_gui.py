@@ -72,7 +72,7 @@ def trigger(state):
 def start_acquisition(viewer, progress_bar):
     
     mmc.startContinuousSequenceAcquisition(0)
-    #time.sleep(1)  # TODO: Allow some time for the camera to start capturing images ???
+    time.sleep(1)  # TODO: Allow some time for the camera to start capturing images ???
     trigger(True)
 
     images = []
@@ -80,7 +80,7 @@ def start_acquisition(viewer, progress_bar):
     start_time = time.time()  # Start time of the acquisition
     for i in range(num_frames):
         while mmc.getRemainingImageCount() == 0:
-            time.sleep(0.01)  # TODO: Wait for images to be available ???
+            time.sleep(0.0001)  # TODO: Wait for images to be available ???
             
         if mmc.getRemainingImageCount() > 0 or mmc.isSequenceRunning():
             # TODO: Insert frame timing function for testing
