@@ -1,22 +1,7 @@
-# About this template
 
-Hi, I created this template to help you get started with a new project.
-
-I have created and maintained a number of python libraries, applications and 
-frameworks and during those years I have learned a lot about how to create a 
-project structure and how to structure a project to be as modular and simple 
-as possible.
-
-Some decisions I have made while creating this template are:
-
- - Create a project structure that is as modular as possible.
- - Keep it simple and easy to maintain.
- - Allow for a lot of flexibility and customizability.
- - Low dependency (this template doesn't add dependencies)
 
 ## Structure
 
-Lets take a look at the structure of this template:
 
 ```text
 ├── Containerfile            # The file to build a container using buildah or docker

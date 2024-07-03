@@ -11,7 +11,6 @@ import nidaqmx
 import time
 
 SAVE_DIR = r'C:/dev/sipefield/devOutput'
-DEVTEST_DIR = r'C:/dev/micro-manager_acq/devtest'
 SAVE_NAME = r'Acquisition_test'
 MM_DIR = r'C:/Program Files/Micro-Manager-2.0'
 MM_CONFIG = r'C:/dev/DyhanaCam.cfg'
@@ -80,7 +79,7 @@ def start_acquisition(viewer, progress_bar):
     start_time = time.time()  # Start time of the acquisition
     for i in range(num_frames):
         while mmc.getRemainingImageCount() == 0:
-            time.sleep(0.0001)  # TODO: Wait for images to be available ???
+            time.sleep(0.1)  # TODO: Wait for images to be available ???
             
         if mmc.getRemainingImageCount() > 0 or mmc.isSequenceRunning():
             # TODO: Insert frame timing function for testing
