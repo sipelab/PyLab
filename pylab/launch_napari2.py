@@ -27,8 +27,7 @@ save_dir = SAVE_DIR
 protocol_id = "devTIFF"
 subject_id = "001"
 session_id = "01"
-num_frame = 100
-duration = 100  # Default duration in seconds
+num_frames = 10
 output_filepath = os.path.join(save_dir, 'high_framerate_prototyping.tiff')
 
 # Function to save frames as a TIFF stack with timestamps
@@ -70,7 +69,7 @@ def trigger(state):
         trigger_signal_off()
 
 # Function to start the MDA sequence
-def start_acquisition(num_frames, save_dir, viewer, progress_bar, protocol_id, subject_id, session_id):
+def start_acquisition(viewer, progress_bar):
     
     mmc.startContinuousSequenceAcquisition(0)
     #time.sleep(1)  # TODO: Allow some time for the camera to start capturing images ???
@@ -78,6 +77,7 @@ def start_acquisition(num_frames, save_dir, viewer, progress_bar, protocol_id, s
 
     images = []
     layer = None
+    start_time = time.time()  # Start time of the acquisition
     for i in range(num_frames):
         while mmc.getRemainingImageCount() == 0:
             time.sleep(0.01)  # TODO: Wait for images to be available ???
@@ -95,8 +95,14 @@ def start_acquisition(num_frames, save_dir, viewer, progress_bar, protocol_id, s
             # Update progress bar
             progress_bar.setValue((i + 1) * 100 // num_frames)
     
+    end_time = time.time()  # End time of the acquisition
+    elapsed_time = end_time - start_time  # Total time taken for the acquisition
+    framerate = num_frames / elapsed_time  # Calculate the average framerate
+    
     mmc.stopSequenceAcquisition()
     trigger(False)
+    
+    print(f"Average framerate: {framerate} frames per second")
     
     # Save images to a single TIFF stack
     # tifffile.imwrite(output_filepath, np.array(images), imagej=True)
@@ -114,48 +120,48 @@ class MyWidget(QWidget):
         self.viewer = viewer
         self.layout = QVBoxLayout(self)
         
-        # Progress bar
+        # ==== Progress bar ==== #
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setMaximum(100)
         self.layout.addWidget(self.progress_bar)
 
-        # Form layout for parameters
+        # ==== Form layout for parameters ==== #
         self.form_layout = QFormLayout()
         
+        # ==== Input fields for parameters ==== #
         self.save_dir_input = QLineEdit(save_dir)
         self.protocol_id_input = QLineEdit(protocol_id)
         self.subject_id_input = QLineEdit(subject_id)
         self.session_id_input = QLineEdit(session_id)
-        self.duration_input = QLineEdit(str(duration))
+        self.num_frames_input = QLineEdit(str(num_frames))
         
+        # === Labels for input fields === #
         self.form_layout.addRow('Save Directory:', self.save_dir_input)
         self.form_layout.addRow('Protocol ID:', self.protocol_id_input)
         self.form_layout.addRow('Subject ID:', self.subject_id_input)
         self.form_layout.addRow('Session ID:', self.session_id_input)
-        self.form_layout.addRow('Duration (seconds):', self.duration_input)
+        self.form_layout.addRow('Number of Frames:', self.num_frames_input)
         
-        self.layout.addLayout(self.form_layout)
+        self.layout.addLayout(self.form_layout) # Add the form layout to the main layout
         
-        # Start Acquisition button
+        # === Start Acquisition button === #
         self.button = QPushButton("Start Acquisition")
         self.button.clicked.connect(self.start_acquisition_with_params)
         self.layout.addWidget(self.button)
 
-        # Test Trigger button
+        # === Test Trigger button === #
         self.button = QPushButton("Test NiDAQ Trigger")
         self.button.clicked.connect(self.test_trigger)
         self.layout.addWidget(self.button)
     
     def start_acquisition_with_params(self):
-        global save_dir, protocol_id, subject_id, session_id, duration
+        global save_dir, protocol_id, subject_id, session_id, num_frames
         save_dir = self.save_dir_input.text()
         protocol_id = self.protocol_id_input.text()
         subject_id = self.subject_id_input.text()
         session_id = self.session_id_input.text()
-        duration = int(self.duration_input.text())
-        start_acquisition(duration, save_dir, 
-                            self.viewer, self.progress_bar,
-                            protocol_id, subject_id, session_id)
+        num_frames = int(self.num_frames_input.text())
+        start_acquisition(self.viewer, self.progress_bar)
         
 
     def test_trigger(self):
