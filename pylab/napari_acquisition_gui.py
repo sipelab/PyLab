@@ -13,7 +13,7 @@ import time
 SAVE_DIR = r'C:/dev/sipefield/devOutput'
 SAVE_NAME = r'Acquisition_test'
 MM_DIR = r'C:/Program Files/Micro-Manager-2.0'
-MM_CONFIG = r'C:/dev/DyhanaCam.cfg'
+MM_CONFIG = r'C:/Program Files/Micro-Manager-2.0/pupil_cam_mmc_config.cfg'
 
 mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration(MM_CONFIG)
@@ -26,7 +26,7 @@ save_dir = SAVE_DIR
 protocol_id = "240703_SBtestFramerate"
 subject_id = "001"
 session_id = "01"
-num_frames = 1000
+num_frames = 100
 output_filepath = os.path.join(save_dir, 'high_framerate_prototyping.tiff')
 
 # Function to save frames as a TIFF stack with timestamps
@@ -72,7 +72,7 @@ def start_acquisition(viewer, progress_bar):
     
     mmc.startContinuousSequenceAcquisition(0)
     time.sleep(1)  # TODO: Allow some time for the camera to start capturing images ???
-    trigger(True)
+    #trigger(True)
 
     images = [] # TODO preallocate images[] with frame parameter
     layer = None
@@ -99,7 +99,7 @@ def start_acquisition(viewer, progress_bar):
     framerate = num_frames / elapsed_time  # Calculate the average framerate
     
     mmc.stopSequenceAcquisition()
-    trigger(False)
+    #trigger(False)
     
     print(f"Average framerate: {framerate} frames per second")
     
@@ -110,7 +110,6 @@ def start_acquisition(viewer, progress_bar):
     viewer.add_image(np.array(images), name='Final Acquisition')
     
     
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!! THANKS SINBA :) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 
