@@ -23,10 +23,10 @@ frames = []
 
 # Default parameters for file saving
 save_dir = SAVE_DIR
-protocol_id = "devTIFF"
+protocol_id = "240703_SBtestFramerate"
 subject_id = "001"
 session_id = "01"
-num_frames = 10
+num_frames = 1000
 output_filepath = os.path.join(save_dir, 'high_framerate_prototyping.tiff')
 
 # Function to save frames as a TIFF stack with timestamps
@@ -74,13 +74,13 @@ def start_acquisition(viewer, progress_bar):
     time.sleep(1)  # TODO: Allow some time for the camera to start capturing images ???
     trigger(True)
 
-    images = []
+    images = [] # TODO preallocate images[] with frame parameter
     layer = None
     start_time = time.time()  # Start time of the acquisition
     for i in range(num_frames):
         while mmc.getRemainingImageCount() == 0:
-            time.sleep(0.1)  # TODO: Wait for images to be available ???
-            
+            time.sleep(0.01)  # TODO: Wait for images to be available ???
+            # TODO check if an image was grabbed from the buffer, then proceed to the next frame
         if mmc.getRemainingImageCount() > 0 or mmc.isSequenceRunning():
             # TODO: Insert frame timing function for testing
             image = mmc.popNextImage()
@@ -108,6 +108,9 @@ def start_acquisition(viewer, progress_bar):
     save_tiff_stack(images, save_dir, protocol_id, subject_id, session_id)
     # Load the final TIFF stack into the viewer
     viewer.add_image(np.array(images), name='Final Acquisition')
+    
+    
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!! THANKS SINBA :) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 
@@ -181,3 +184,4 @@ def start_napari():
 # Launch Napari with the custom widget
 if __name__ == "__main__":
     start_napari()
+

@@ -70,7 +70,7 @@ def acquire_images(num_frames, output_filepath, viewer, progress_bar):
     mmc.startContinuousSequenceAcquisition(0)
     time.sleep(1)  # Allow some time for the camera to start capturing images
     
-    images = []
+    images = [] # TODO preallocate images[] with frame parameter
     layer = None
     for i in range(num_frames):
         while mmc.getRemainingImageCount() == 0:
