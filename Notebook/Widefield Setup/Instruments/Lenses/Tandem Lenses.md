@@ -8,5 +8,5 @@ https://www.photonstophotos.net/GeneralTopics/Lenses/OpticalBench/OpticalBenchHu
 
 Attached to [[Dhyana 400BSI V2]]
 
-- [ ] Verify focal plane for the GCaMP fluorescent wavelengths
-- [ ] Describe the working distance for [[Current Setup.canvas]]
+- [ ] Verify focal plane for the GCaMP fluorescent wavelengths  [priority:: medium]
+- [ ] Describe the working distance for [[Current Setup.canvas]]  [priority:: low]

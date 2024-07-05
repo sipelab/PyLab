@@ -29,6 +29,15 @@ $ python -m pylab
 $ pylab
 ```
 
-## Development
+## Adding a configuration file to a mmc.core() object
+
+```py
+MM_CONFIG = r'C:/dev/micro-manager_configuration.cfg'
+
+# Initialize the Core
+mmc = CMMCorePlus().instance()
+mmc.loadSystemConfiguration(MM_CONFIG)
+```
+
 
 Read the [CONTRIBUTING.md](CONTRIBUTING.md) file.

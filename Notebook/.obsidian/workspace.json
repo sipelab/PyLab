@@ -52,12 +52,14 @@
             "id": "9ddb4bcfbb779040",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "%resources/Shopping list.md",
-                "mode": "source",
-                "backlinks": true,
-                "source": false
+                "file": "Widefield Setup/Current Setup.canvas",
+                "viewState": {
+                  "x": 10,
+                  "y": -457.9641415724945,
+                  "zoom": -1.1573483351468064
+                }
               }
             }
           }
@@ -128,7 +130,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "%resources/Shopping list.md",
+                "file": "Widefield Setup/Current Setup.canvas",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -145,7 +147,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "%resources/Shopping list.md",
+                "file": "Widefield Setup/Current Setup.canvas",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -168,7 +170,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "%resources/Shopping list.md"
+                "file": "Widefield Setup/Current Setup.canvas"
               }
             }
           },
@@ -205,8 +207,24 @@
   "active": "9ddb4bcfbb779040",
   "lastOpenFiles": [
     "%resources/Quick Reference.md",
-    "%resources/Background Information.md",
+    "LOG/-Log Book.md",
+    "Operations/GlassNest/Trapdoor.md",
+    "LOG/2024-07-03.md",
+    "LOG/2024-06-26.md",
+    "LOG/2024-06-27.md",
+    "LOG/2024-06-25.md",
+    "LOG/2024-06-21.md",
+    "LOG/2024-06-20.md",
+    "LOG/2024-06-19.md",
+    "LOG/2024-06-17.md",
+    "LOG/2024-06-14.md",
+    "LOG/2024-06-12.md",
+    "LOG/2024-06-11.md",
+    "LOG/2024-06-23.md",
+    "LOG/2024-07-01.md",
+    "Widefield Setup/References.md",
     "%resources/Shopping list.md",
+    "%resources/Background Information.md",
     "Operations/GlassNest/=GlassNest.md",
     "Widefield Setup/Computers/Sol.md",
     "Widefield Setup/Computers/Psyche.md",
@@ -215,23 +233,7 @@
     "Widefield Setup/Instruments/Screens/Vis Stim Screen.md",
     "Widefield Setup/Instruments/Screens",
     "Widefield Setup/Instruments/Cameras/Thorlabs CS165 MU.md",
-    "Widefield Setup/docs/Hardware-triggering.md",
-    "Widefield Setup/Software/MicroManager.md",
-    "Widefield Setup/References.md",
     "Widefield Setup/docs",
-    "LOG/2024-07-03.md",
-    "Widefield Setup/Instruments/Cameras/Dhyana 400BSI V2.md",
-    "Widefield Setup/Python/Napari.md",
-    "LOG/2024-07-01.md",
-    "Operations/GlassNest/+alpha.md",
-    "LOG/2024-06-27.md",
-    "LOG/2024-06-11.md",
-    "LOG/-Log Book.md",
-    "LOG/2024-06-12.md",
-    "LOG/2024-06-17.md",
-    "LOG/2024-06-14.md",
-    "LOG/2024-06-19.md",
-    "LOG/2024-06-20.md",
     "Widefield Setup/Current Setup.canvas",
     "Widefield Setup/Instruments/Control Boards/NI-DAQ/%attachments/NI USB-6001 Pinout.png",
     "Widefield Setup/Instruments/Cameras/%attachments/Dhyana 400BSI V2 dimensions.png",
