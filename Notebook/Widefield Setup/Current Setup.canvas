@@ -1,0 +1,13 @@
+{
+	"nodes":[
+		{"id":"1e21ccef4734c09d","x":-480,"y":-500,"width":400,"height":460,"type":"file","file":"Widefield Setup/Instruments/Lenses/Nikon AF-S Nikkor 105mm.md"},
+		{"id":"1dcc51966c517939","x":-480,"y":-960,"width":400,"height":400,"type":"file","file":"Widefield Setup/Instruments/Cameras/Dhyana 400BSI V2.md"},
+		{"id":"49e9fda2714c4dc8","x":-480,"y":20,"width":400,"height":484,"type":"file","file":"Widefield Setup/Instruments/Lenses/Nikon AF-S Nikkor 50mm.md"},
+		{"id":"5e36e016fcf14395","x":100,"y":-760,"width":400,"height":400,"type":"file","file":"Widefield Setup/Instruments/Control Boards/NI-DAQ/NI USB-6001.md"},
+		{"id":"b49226e9837fb267","x":100,"y":-320,"width":400,"height":400,"type":"file","file":"Widefield Setup/Instruments/Stage Equipment/ThorLabs/Stage Equipment.md"}
+	],
+	"edges":[
+		{"id":"18f2a5cd3d669051","fromNode":"1dcc51966c517939","fromSide":"bottom","toNode":"1e21ccef4734c09d","toSide":"top"},
+		{"id":"571149332a0c3fff","fromNode":"1e21ccef4734c09d","fromSide":"bottom","toNode":"49e9fda2714c4dc8","toSide":"top"}
+	]
+}

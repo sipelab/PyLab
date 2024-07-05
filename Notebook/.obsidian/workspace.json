@@ -1,0 +1,257 @@
+{
+  "main": {
+    "id": "60e40c62ce570692",
+    "type": "split",
+    "children": [
+      {
+        "id": "85dd6c5f321329b7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "87611bf66274898d",
+            "type": "leaf",
+            "pinned": true,
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "%resources/Quick Reference.md",
+                "mode": "source",
+                "backlinks": true,
+                "source": false
+              },
+              "pinned": true
+            }
+          },
+          {
+            "id": "5f0046bb42c2cbfe",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "LOG/2024-06-20.md",
+                "mode": "source",
+                "backlinks": true,
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "8c79957cbf39540f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Widefield Setup/Instruments/Cameras/Dhyana 400BSI V2.md",
+                "mode": "source",
+                "backlinks": true,
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "9ddb4bcfbb779040",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "%resources/Shopping list.md",
+                "mode": "source",
+                "backlinks": true,
+                "source": false
+              }
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "f974e9c08f55d906",
+    "type": "split",
+    "children": [
+      {
+        "id": "856c0d2bef02f459",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b62b92bdfa2dd367",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "d395cade7288e8e0",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "napari",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "13b80b9b5166fb03",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300.5
+  },
+  "right": {
+    "id": "f005a1f147e335e8",
+    "type": "split",
+    "children": [
+      {
+        "id": "6d5b2cf3d52d4dee",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cef2e1ecd6392b30",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "%resources/Shopping list.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "790a3b1bf55b42d2",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "%resources/Shopping list.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "3fc4398e5716dc0e",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "ba079cbd95f38590",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "%resources/Shopping list.md"
+              }
+            }
+          },
+          {
+            "id": "3cca577b608f97ae",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "workspaces:Manage workspace layouts": false
+    }
+  },
+  "active": "9ddb4bcfbb779040",
+  "lastOpenFiles": [
+    "%resources/Quick Reference.md",
+    "%resources/Background Information.md",
+    "%resources/Shopping list.md",
+    "Operations/GlassNest/=GlassNest.md",
+    "Widefield Setup/Computers/Sol.md",
+    "Widefield Setup/Computers/Psyche.md",
+    "Widefield Setup/Computers/NapariComp.md",
+    "Widefield Setup/Instruments/Control Boards/NI-DAQ/NI USB-6001.md",
+    "Widefield Setup/Instruments/Screens/Vis Stim Screen.md",
+    "Widefield Setup/Instruments/Screens",
+    "Widefield Setup/Instruments/Cameras/Thorlabs CS165 MU.md",
+    "Widefield Setup/docs/Hardware-triggering.md",
+    "Widefield Setup/Software/MicroManager.md",
+    "Widefield Setup/References.md",
+    "Widefield Setup/docs",
+    "LOG/2024-07-03.md",
+    "Widefield Setup/Instruments/Cameras/Dhyana 400BSI V2.md",
+    "Widefield Setup/Python/Napari.md",
+    "LOG/2024-07-01.md",
+    "Operations/GlassNest/+alpha.md",
+    "LOG/2024-06-27.md",
+    "LOG/2024-06-11.md",
+    "LOG/-Log Book.md",
+    "LOG/2024-06-12.md",
+    "LOG/2024-06-17.md",
+    "LOG/2024-06-14.md",
+    "LOG/2024-06-19.md",
+    "LOG/2024-06-20.md",
+    "Widefield Setup/Current Setup.canvas",
+    "Widefield Setup/Instruments/Control Boards/NI-DAQ/%attachments/NI USB-6001 Pinout.png",
+    "Widefield Setup/Instruments/Cameras/%attachments/Dhyana 400BSI V2 dimensions.png",
+    "Widefield Setup/Instruments/Cameras/%attachments",
+    "Widefield Setup/Computers/Psyche",
+    "Widefield Setup/Computers",
+    "Widefield Setup/Instruments/Stage Equipment",
+    "Widefield Setup/Instruments/Control Boards",
+    "Widefield Setup/Instruments/Cameras",
+    "Widefield Setup/Software/%attachments/MicroManager Config File Setup.png",
+    "Widefield Setup/Software/%attachments/MicroManager Config Setup.png",
+    "Widefield Setup/Software/%attachments",
+    "LOG/%attachments/240620_config_devJG.cfg",
+    "Widefield Setup/Instruments/Lenses/%attachments/Pasted image 20240618170337.png",
+    "Widefield Setup/Instruments/Lenses/%attachments/Nikon AF-S Nikkor 105mm Optics.png",
+    "Widefield Setup/Instruments/Lenses/%attachments/Nikon AF-S Nikkor 50mm Optics.png",
+    "Widefield Setup/Instruments/Control Boards/NI-DAQ/%attachments/NI USB-6001_deprecatedDriver.png",
+    "%resources/%attachments/1_FCUanQvt8MxxjhaF_UDY-A.webp",
+    "Operations/GlassNest/+alpha.canvas",
+    "Operations/GlassNest/%attachments/Pasted image 20240612190851.png",
+    "LOG/Untitled.canvas"
+  ]
+}
