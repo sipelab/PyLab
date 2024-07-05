@@ -103,3 +103,57 @@ def test_nidaq_connection(device_name):
         return True
     except nidaqmx.DaqError:
         return False
+    
+    
+### MMCore configuration-check utility functions (check settings of devices connected to Micro-Manager via loaded configuration.cfg file) ###
+
+def sanity_check(mmc):
+    """
+    Perform a sanity check to ensure that the Core is properly
+    initialized and that the camera is connected. 
+
+    This function lists: 
+    - the loaded devices
+    - configuration groups
+    - current MMCore configuration settings 
+    - camera settings.
+
+    """
+    print("Sanity Check:")
+    print("=============")
+    
+    # ==== List all devices loaded by Micro-Manager ==== #
+    devices = mmc.getLoadedDevices()
+    print("Loaded Devices:")
+    for device in devices:
+        print(f" - {device}: {mmc.getDeviceDescription(device)}")
+    
+    # ==== Display configuration groups ==== #
+    config_groups = mmc.getAvailableConfigGroups()
+    print("\nConfiguration Groups:")
+    for group in config_groups:
+        print(f" - {group}")
+        configs = mmc.getAvailableConfigs(group)
+        for config in configs:
+            print(f"    - {config}")
+    
+    # ==== Display current configuration ==== #
+    print("\nCurrent Configuration:")
+    # Get the current configuration settings for each group
+    for group in config_groups:
+        print(f" - {group}: {mmc.getCurrentConfig(group)}")
+    
+    # ==== Display camera settings ==== #
+    camera_device = mmc.getCameraDevice()
+    if camera_device:
+        print(f"\nCamera Device: {camera_device}")
+        print(f" - Exposure: {mmc.getExposure()} ms")
+        print(f" - Pixel Size: {mmc.getPixelSizeUm()} um")
+    else:
+        print("\nNo camera device found.")
+
+    
+    print("\nOther Information:")
+    print(f" - Image Width: {mmc.getImageWidth()}")
+    print(f" - Image Height: {mmc.getImageHeight()}")
+    print(f" - Bit Depth: {mmc.getImageBitDepth()}")
