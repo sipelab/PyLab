@@ -52,14 +52,12 @@
             "id": "9ddb4bcfbb779040",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "Widefield Setup/Current Setup.canvas",
-                "viewState": {
-                  "x": 10,
-                  "y": -457.9641415724945,
-                  "zoom": -1.1573483351468064
-                }
+                "file": "Operations/GlassNest/Trapdoor.md",
+                "mode": "source",
+                "backlinks": true,
+                "source": false
               }
             }
           }
@@ -130,7 +128,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Widefield Setup/Current Setup.canvas",
+                "file": "Operations/GlassNest/Trapdoor.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -147,7 +145,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Widefield Setup/Current Setup.canvas",
+                "file": "Operations/GlassNest/Trapdoor.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -170,7 +168,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Widefield Setup/Current Setup.canvas"
+                "file": "Operations/GlassNest/Trapdoor.md"
               }
             }
           },
@@ -207,8 +205,15 @@
   "active": "9ddb4bcfbb779040",
   "lastOpenFiles": [
     "%resources/Quick Reference.md",
-    "LOG/-Log Book.md",
+    "Widefield Setup/docs/Background Information.md",
+    "Widefield Setup/sipefield environment setup.md",
+    "Widefield Setup/Current Setup.canvas",
+    "Widefield Setup/Setup.md",
+    "LOG/2024-07-09.md",
+    "LOG/2024-07-05.md",
+    "%resources/Templates/LOGGER.md",
     "Operations/GlassNest/Trapdoor.md",
+    "LOG/-Log Book.md",
     "LOG/2024-07-03.md",
     "LOG/2024-06-26.md",
     "LOG/2024-06-27.md",
@@ -222,19 +227,11 @@
     "LOG/2024-06-11.md",
     "LOG/2024-06-23.md",
     "LOG/2024-07-01.md",
-    "Widefield Setup/References.md",
+    "Widefield Setup/docs/References.md",
     "%resources/Shopping list.md",
-    "%resources/Background Information.md",
     "Operations/GlassNest/=GlassNest.md",
-    "Widefield Setup/Computers/Sol.md",
-    "Widefield Setup/Computers/Psyche.md",
-    "Widefield Setup/Computers/NapariComp.md",
-    "Widefield Setup/Instruments/Control Boards/NI-DAQ/NI USB-6001.md",
-    "Widefield Setup/Instruments/Screens/Vis Stim Screen.md",
     "Widefield Setup/Instruments/Screens",
-    "Widefield Setup/Instruments/Cameras/Thorlabs CS165 MU.md",
     "Widefield Setup/docs",
-    "Widefield Setup/Current Setup.canvas",
     "Widefield Setup/Instruments/Control Boards/NI-DAQ/%attachments/NI USB-6001 Pinout.png",
     "Widefield Setup/Instruments/Cameras/%attachments/Dhyana 400BSI V2 dimensions.png",
     "Widefield Setup/Instruments/Cameras/%attachments",
