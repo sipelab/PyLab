@@ -80,6 +80,11 @@ class NIDAQ:
     def trigger(self, state):
         signal_values = [state] * len(self.channels)
         self.send_signal(signal_values)
+        
+    def pulse(self, duration=1):
+        self.trigger(True)
+        time.sleep(duration)
+        self.trigger(False)
 
 
 
@@ -181,9 +186,8 @@ class MyWidget(QWidget):
 
     def test_trigger(self):
         with NIDAQ() as nidaq:
-            nidaq.trigger(True)
-            time.sleep(1)
-            nidaq.trigger(False)
+            nidaq.pulse()
+
 
 
 # Function to start Napari with the custom widget
