@@ -90,10 +90,11 @@ class NIDAQ:
 
 # Function to start the MDA sequence
 def start_acquisition(viewer, progress_bar):
-    
+    with NIDAQ() as nidaq:
+        nidaq.trigger()
+        
     mmc.startContinuousSequenceAcquisition(0)
     time.sleep(1)  # TODO: Allow some time for the camera to start capturing images ???
-    trigger(True)
 
     images = []
     layer = None
@@ -120,7 +121,6 @@ def start_acquisition(viewer, progress_bar):
     framerate = num_frames / elapsed_time  # Calculate the average framerate
     
     mmc.stopSequenceAcquisition()
-    trigger(False)
     
     print(f"Average framerate: {framerate} frames per second")
     
