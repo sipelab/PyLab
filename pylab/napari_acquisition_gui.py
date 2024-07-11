@@ -9,6 +9,7 @@ import nidaqmx
 
 
 import time
+import pandas as pd
 
 SAVE_DIR = r'C:/dev/sipefield/devOutput'
 SAVE_NAME = r'Acquisition_test'
@@ -18,33 +19,43 @@ MM_CONFIG = r'C:/dev/DyhanaCam.cfg'
 mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration(MM_CONFIG)
 
-# Initialize a list to store frames
-frames = []
 
 # Default parameters for file saving
-save_dir = SAVE_DIR
+save_dir = r'C:/dev/sipefield/devOutput'
 protocol_id = "devTIFF"
 subject_id = "001"
 session_id = "01"
 num_frames = 10
-output_filepath = os.path.join(save_dir, 'high_framerate_prototyping.tiff')
+nidaq_device = 'Dev2'
 
-# Function to save frames as a TIFF stack with timestamps
-def save_tiff_stack(frames, save_dir, protocol, subject_id, session_id):
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S') # get current timestamp
-    anat_dir = os.path.join(save_dir, f"{protocol}-{subject_id}", f"ses-{session_id}", "anat")
-    os.makedirs(anat_dir, exist_ok=True) # create the directory if it doesn't exist
-    filename = os.path.join(anat_dir, f"sub-{subject_id}_ses-{session_id}_{timestamp}.tiff")
-    tifffile.imwrite(filename, np.array(frames)) # save the TIFF stack
-    print(f"Saved TIFF stack: {filename}")
+# Class to save frames as a TIFF stack with timestamps
+class Output:
+    def __init__(self, save_dir=save_dir, protocol=protocol_id, subject_id=subject_id, session_id=session_id):
+        self.save_dir = save_dir
+        self.protocol = protocol
+        self.subject_id = subject_id
+        self.session_id = session_id
 
+    def save(self, frames):
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S') # get current timestamp
+        anat_dir = os.path.join(self.save_dir, f"{self.protocol}-{self.subject_id}", f"ses-{self.session_id}", "anat")
+        os.makedirs(anat_dir, exist_ok=True) # create the directory if it doesn't exist
+        filename = os.path.join(anat_dir, f"sub-{self.subject_id}_ses-{self.session_id}_{timestamp}.tiff")
+        tifffile.imwrite(filename, np.array(frames)) # save the TIFF stack
+        print(f"Saved TIFF stack: {filename}")
 
-def trigger_decorator(func):
-    def wrapper():
-        trigger(True)
-        func()
-        trigger(False)
-
+    def save_md(self, metadata):
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S') # get current timestamp
+        metadata_dir = os.path.join(save_dir, f"{self.protocol}-{self.subject_id}", f"ses-{self.session_id}", "metadata")
+        os.makedirs(metadata_dir, exist_ok=True) # create the directory if it doesn't exist
+        filename = os.path.join(metadata_dir, f"sub-{self.subject_id}_ses-{self.session_id}_{timestamp}.csv")
+        df = pd.DataFrame(metadata)
+        df.to_csv(filename, index=False) # save the metadata as a CSV file
+        print(f"Saved metadata: {filename}")
+    
+    def create_dataframe(self, frames):
+        df = pd.DataFrame(frames)
+        return df
 class NIDAQ:
     '''
     Class to handle NI-DAQ operations for digital output. The class is used as a context manager to ensure proper initialization and cleanup of the NI-DAQ task. 
@@ -55,7 +66,7 @@ class NIDAQ:
     - device_name (str): Name of the NI-DAQ device (default: 'Dev2')
     - channels (list): List of channel names to use for digital output (default: ['port0/line0', 'port0/line1'])
     '''
-    def __init__(self, device_name='Dev2', channels=None):
+    def __init__(self, device_name=nidaq_device, channels=None):
         self.device_name = device_name
         self.channels = channels if channels else ['port0/line0', 'port0/line1']
         self.task = None
@@ -87,16 +98,16 @@ class NIDAQ:
         self.trigger(False)
 
 
-
 # Function to start the MDA sequence
 def start_acquisition(viewer, progress_bar):
     with NIDAQ() as nidaq:
-        nidaq.trigger()
-        
+        nidaq.trigger(True)
+    
     mmc.startContinuousSequenceAcquisition(0)
     time.sleep(1)  # TODO: Allow some time for the camera to start capturing images ???
 
     images = []
+    metadata = []
     layer = None
     start_time = time.time()  # Start time of the acquisition
     for i in range(num_frames):
@@ -107,14 +118,17 @@ def start_acquisition(viewer, progress_bar):
             # TODO: Insert frame timing function for testing
             image = mmc.popNextImage()
             images.append(image)
+
             if layer is None:
                 # Initialize the live-view layer on the first image
                 layer = viewer.add_image(image, name='Live View')
             else:
                 layer.data = image  # Update the image layer with the new frame
 
-            # Update progress bar
-            progress_bar.setValue((i + 1) * 100 // num_frames)
+            # Update progress bar at 1% intervals
+            if (i + 1) % (num_frames // 100) == 0:
+                progress_bar.setValue((i + 1) * 100 // num_frames) 
+                print(f"Frame {i + 1} acquired at percentage {progress_bar.value()}% or raw:", ((i+1)*100 // num_frames))
     
     end_time = time.time()  # End time of the acquisition
     elapsed_time = end_time - start_time  # Total time taken for the acquisition
@@ -122,14 +136,16 @@ def start_acquisition(viewer, progress_bar):
     
     mmc.stopSequenceAcquisition()
     
+    with NIDAQ() as nidaq:
+        nidaq.trigger(False)
+        
     print(f"Average framerate: {framerate} frames per second")
     
-    # Save images to a single TIFF stack
-    # tifffile.imwrite(output_filepath, np.array(images), imagej=True)
-    save_tiff_stack(images, save_dir, protocol_id, subject_id, session_id)
+    # Save images to a single TIFF stack with associated metadata
+    acquisition = Output(save_dir, protocol_id, subject_id, session_id)
+    acquisition.save(images)
     # Load the final TIFF stack into the viewer
     viewer.add_image(np.array(images), name='Final Acquisition')
-
 
 
 # Custom widget class for Napari
@@ -189,16 +205,17 @@ class MyWidget(QWidget):
             nidaq.pulse()
 
 
-
 # Function to start Napari with the custom widget
 def start_napari():
-    print("Starting Sipefield Napari Acquisition Interface...")
+    print("launching interface...")
     viewer = Viewer()
+    
     # Activate live view
     viewer.window.add_plugin_dock_widget('napari-micromanager')
-    viewer.window.add_dock_widget(MyWidget(viewer), area='right')
+    viewer.window.add_dock_widget(MyWidget(viewer), area='bottom')
     run()
 
 # Launch Napari with the custom widget
 if __name__ == "__main__":
+    print("Starting Sipefield Napari Acquisition Interface...")
     start_napari()
