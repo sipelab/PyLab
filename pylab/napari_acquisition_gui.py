@@ -45,27 +45,43 @@ def trigger_decorator(func):
         func()
         trigger(False)
 
-def trigger(state):
-    # Function to send a high (TRUE) signal out of NIDAQ
-    def send_trigger_signal():
-        with nidaqmx.Task() as task:
-            task.do_channels.add_do_chan('Dev2/port0/line0')  # Hardware dependent value; check the NIDAQ device for the correct port and line
-            task.do_channels.add_do_chan('Dev2/port0/line1')  # Hardware dependent value; check the NIDAQ device for the correct port and line
-            task.write([True, True])
-            print("Signal High from Dev2 on both lines")
+class NIDAQ:
+    '''
+    Class to handle NI-DAQ operations for digital output. The class is used as a context manager to ensure proper initialization and cleanup of the NI-DAQ task. 
+    The send_signal method is used to send a digital signal to the specified channels
+    The trigger method is a convenience method to send a high signal followed by a low signal to the channels.
+    
+    Parameters:
+    - device_name (str): Name of the NI-DAQ device (default: 'Dev2')
+    - channels (list): List of channel names to use for digital output (default: ['port0/line0', 'port0/line1'])
+    '''
+    def __init__(self, device_name='Dev2', channels=None):
+        self.device_name = device_name
+        self.channels = channels if channels else ['port0/line0', 'port0/line1']
+        self.task = None
 
-    # Function to send a low (FALSE) signal out of NIDAQ
-    def trigger_signal_off():
-        with nidaqmx.Task() as task:
-            task.do_channels.add_do_chan('Dev2/port0/line0')  # Hardware dependent value; check the NIDAQ device for the correct port and line
-            task.do_channels.add_do_chan('Dev2/port0/line1')  # Hardware dependent value; check the NIDAQ device for the correct port and line
-            task.write([False, False])
-            print("Signal Low from Dev2 on both lines")
+    def __enter__(self):
+        self.task = nidaqmx.Task()
+        for channel in self.channels:
+            full_channel_name = f'{self.device_name}/{channel}'
+            self.task.do_channels.add_do_chan(full_channel_name)
+        return self
 
-    if state:
-        send_trigger_signal()
-    else:
-        trigger_signal_off()
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.task:
+            self.task.close()
+
+    def send_signal(self, signal_values):
+        if not self.task:
+            raise RuntimeError("Task not initialized. Use 'with NIDAQ(...) as nidaq:' context.")
+        self.task.write(signal_values)
+        print(f"Signal {'High' if all(signal_values) else 'Low'} on {self.device_name} for channels {self.channels}")
+
+    def trigger(self, state):
+        signal_values = [state] * len(self.channels)
+        self.send_signal(signal_values)
+
+
 
 # Function to start the MDA sequence
 def start_acquisition(viewer, progress_bar):
@@ -164,9 +180,10 @@ class MyWidget(QWidget):
         
 
     def test_trigger(self):
-        trigger(True)
-        time.sleep(1)
-        trigger(False)
+        with NIDAQ() as nidaq:
+            nidaq.trigger(True)
+            time.sleep(1)
+            nidaq.trigger(False)
 
 
 # Function to start Napari with the custom widget
