@@ -24,7 +24,7 @@
         <ImageProcessEnable>14</ImageProcessEnable>
         <DefectCorrectionValue>0</DefectCorrectionValue>
         <MultipleCameras>1</MultipleCameras>
-        <Gamma>100</Gamma>
+        <Gamma>82</Gamma>
         <Contrast>128</Contrast>
         <LeftLevels>0</LeftLevels>
         <RightLevels>65535</RightLevels>

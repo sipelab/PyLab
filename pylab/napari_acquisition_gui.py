@@ -4,9 +4,13 @@ import tifffile
 import os
 from datetime import datetime
 from napari import Viewer, run
-from qtpy.QtWidgets import QPushButton, QWidget, QVBoxLayout, QLineEdit, QLabel, QFormLayout, QProgressBar
+from qtpy.QtWidgets import QCheckBox, QPushButton, QWidget, QVBoxLayout, QLineEdit, QLabel, QFormLayout, QProgressBar
 import nidaqmx
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import napari
 
 import time
 import pandas as pd
@@ -15,10 +19,11 @@ SAVE_DIR = r'C:/dev/sipefield/devOutput'
 SAVE_NAME = r'Acquisition_test'
 MM_DIR = r'C:/Program Files/Micro-Manager-2.0'
 MM_CONFIG = r'C:/dev/DyhanaCam.cfg'
+NIDAQ_DEVICE = 'Dev2'
 
+print("loading Micro-Manager CORE...")
 mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration(MM_CONFIG)
-
 
 # Default parameters for file saving
 save_dir = r'C:/dev/sipefield/devOutput'
@@ -26,7 +31,6 @@ protocol_id = "devTIFF"
 subject_id = "001"
 session_id = "01"
 num_frames = 10
-nidaq_device = 'Dev2'
 
 # Class to save frames as a TIFF stack with timestamps
 class Output:
@@ -66,7 +70,7 @@ class NIDAQ:
     - device_name (str): Name of the NI-DAQ device (default: 'Dev2')
     - channels (list): List of channel names to use for digital output (default: ['port0/line0', 'port0/line1'])
     '''
-    def __init__(self, device_name=nidaq_device, channels=None):
+    def __init__(self, device_name=NIDAQ_DEVICE, channels=None):
         self.device_name = device_name
         self.channels = channels if channels else ['port0/line0', 'port0/line1']
         self.task = None
@@ -97,12 +101,21 @@ class NIDAQ:
         time.sleep(duration)
         self.trigger(False)
 
-
 # Function to start the MDA sequence
-def start_acquisition(viewer, progress_bar):
-    with NIDAQ() as nidaq:
-        nidaq.trigger(True)
-    
+def start_acquisition(viewer, wait_for_trigger):
+
+
+    if wait_for_trigger:
+        with NIDAQ() as nidaq:
+            print("Waiting for trigger...")
+            nidaq.trigger(False)
+            while not nidaq.task.read():
+                time.sleep(0.1)
+    else:
+        print("Starting immediately...")
+        with NIDAQ() as nidaq:
+            nidaq.trigger(True)
+        
     mmc.startContinuousSequenceAcquisition(0)
     time.sleep(1)  # TODO: Allow some time for the camera to start capturing images ???
 
@@ -125,11 +138,6 @@ def start_acquisition(viewer, progress_bar):
             else:
                 layer.data = image  # Update the image layer with the new frame
 
-            # Update progress bar at 1% intervals
-            if (i + 1) % (num_frames // 100) == 0:
-                progress_bar.setValue((i + 1) * 100 // num_frames) 
-                print(f"Frame {i + 1} acquired at percentage {progress_bar.value()}% or raw:", ((i+1)*100 // num_frames))
-    
     end_time = time.time()  # End time of the acquisition
     elapsed_time = end_time - start_time  # Total time taken for the acquisition
     framerate = num_frames / elapsed_time  # Calculate the average framerate
@@ -150,16 +158,16 @@ def start_acquisition(viewer, progress_bar):
 
 # Custom widget class for Napari
 class MyWidget(QWidget):
-    def __init__(self, viewer, parent=None):
-        super().__init__(parent)
-        
+    def __init__(self, viewer: "napari.viewer.Viewer"):
+        super().__init__()
         self.viewer = viewer
         self.layout = QVBoxLayout(self)
+        self._trigger_mode = False
         
         # ==== Progress bar ==== #
-        self.progress_bar = QProgressBar(self)
-        self.progress_bar.setMaximum(100)
-        self.layout.addWidget(self.progress_bar)
+        # self.progress_bar = QProgressBar(self)
+        # self.progress_bar.setMaximum(100)
+        # self.layout.addWidget(self.progress_bar)
 
         # ==== Form layout for parameters ==== #
         self.form_layout = QFormLayout()
@@ -177,8 +185,13 @@ class MyWidget(QWidget):
         self.form_layout.addRow('Subject ID:', self.subject_id_input)
         self.form_layout.addRow('Session ID:', self.session_id_input)
         self.form_layout.addRow('Number of Frames:', self.num_frames_input)
-        
         self.layout.addLayout(self.form_layout) # Add the form layout to the main layout
+        
+        # === Checkbox for trigger mode === #
+        self.checkbox = QCheckBox("Wait for Trigger")
+        self.checkbox.setCheckState(False)
+        self.checkbox.stateChanged.connect(self.set_trigger_mode)
+        self.layout.addWidget(self.checkbox)
         
         # === Start Acquisition button === #
         self.button = QPushButton("Start Acquisition")
@@ -188,8 +201,8 @@ class MyWidget(QWidget):
         # === Test Trigger button === #
         self.button = QPushButton("Test NiDAQ Trigger")
         self.button.clicked.connect(self.test_trigger)
-        self.layout.addWidget(self.button)
-    
+        self.layout.addWidget(self.button) 
+        
     def start_acquisition_with_params(self):
         global save_dir, protocol_id, subject_id, session_id, num_frames
         save_dir = self.save_dir_input.text()
@@ -197,16 +210,23 @@ class MyWidget(QWidget):
         subject_id = self.subject_id_input.text()
         session_id = self.session_id_input.text()
         num_frames = int(self.num_frames_input.text())
-        start_acquisition(self.viewer, self.progress_bar)
+        start_acquisition(self.viewer, self._trigger_mode)
         
 
     def test_trigger(self):
         with NIDAQ() as nidaq:
             nidaq.pulse()
+            
+    def set_trigger_mode(self, checked):
+        if checked:
+            self._trigger_mode = True
+        else:
+            self._trigger_mode = False
 
 
 # Function to start Napari with the custom widget
 def start_napari():
+    
     print("launching interface...")
     viewer = Viewer()
     
