@@ -18,8 +18,10 @@ import pandas as pd
 SAVE_DIR = r'C:/dev/sipefield/devOutput'
 SAVE_NAME = r'Acquisition_test'
 MM_DIR = r'C:/Program Files/Micro-Manager-2.0'
-MM_CONFIG = r'C:/dev/DyhanaCam.cfg'
-NIDAQ_DEVICE = 'Dev2'
+MM_CONFIG = r'C:/dev/ThorPupil.cfg'
+NIDAQ_DEVICE = 'Dev1'
+CHANNELS = ['port2/line0']
+IO = 'input' # is the NIDAQ an INput or Output Device?
 
 print("loading Micro-Manager CORE...")
 mmc = CMMCorePlus.instance()
@@ -70,19 +72,28 @@ class NIDAQ:
     - device_name (str): Name of the NI-DAQ device (default: 'Dev2')
     - channels (list): List of channel names to use for digital output (default: ['port0/line0', 'port0/line1'])
     '''
-    def __init__(self, device_name=NIDAQ_DEVICE, channels=None):
+    def __init__(self, device_name=NIDAQ_DEVICE, channels=CHANNELS, io=IO):
         self.device_name = device_name
         self.channels = channels if channels else ['port0/line0', 'port0/line1']
         self.task = None
+        self._io = io 
 
     def __enter__(self):
+        """During With context, generate input or output channels according to parameter 'io' """
         self.task = nidaqmx.Task()
-        for channel in self.channels:
-            full_channel_name = f'{self.device_name}/{channel}'
-            self.task.do_channels.add_do_chan(full_channel_name)
-        return self
+        if self._io == "input": # Create input channel(s)
+            for channel in self.channels:
+                full_channel_name = f'{self.device_name}/{channel}'
+                self.task.di_channels.add_di_chan(full_channel_name)
+            return self
+        else: # Create output channel(s)
+            for channel in self.channels:
+                full_channel_name = f'{self.device_name}/{channel}'
+                self.task.do_channels.add_do_chan(full_channel_name)
+            return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Close the task() on exit"""
         if self.task:
             self.task.close()
 
@@ -104,20 +115,20 @@ class NIDAQ:
 # Function to start the MDA sequence
 def start_acquisition(viewer, wait_for_trigger):
 
-
     if wait_for_trigger:
         with NIDAQ() as nidaq:
-            print("Waiting for trigger...")
-            nidaq.trigger(False)
-            while not nidaq.task.read():
-                time.sleep(0.1)
-    else:
-        print("Starting immediately...")
-        with NIDAQ() as nidaq:
-            nidaq.trigger(True)
-        
+            if nidaq._io == "output": 
+                # reset NIDAQ output trigger state
+                with NIDAQ() as nidaq:
+                    nidaq.trigger(False)
+            else:
+                print("Waiting for trigger...")
+                while not nidaq.task.read(): # While input signal is not True
+                    time.sleep(0.1)
+
+    print(time.ctime(time.time()), ' trigger received, starting acquisition')
     mmc.startContinuousSequenceAcquisition(0)
-    time.sleep(1)  # TODO: Allow some time for the camera to start capturing images ???
+    time.sleep(1)  # Allow some time for the camera to start capturing images
 
     images = []
     metadata = []
@@ -125,10 +136,9 @@ def start_acquisition(viewer, wait_for_trigger):
     start_time = time.time()  # Start time of the acquisition
     for i in range(num_frames):
         while mmc.getRemainingImageCount() == 0:
-            time.sleep(0.1)  # TODO: Wait for images to be available ???
+            time.sleep(0.1) 
             
         if mmc.getRemainingImageCount() > 0 or mmc.isSequenceRunning():
-            # TODO: Insert frame timing function for testing
             image = mmc.popNextImage()
             images.append(image)
 
@@ -143,11 +153,13 @@ def start_acquisition(viewer, wait_for_trigger):
     framerate = num_frames / elapsed_time  # Calculate the average framerate
     
     mmc.stopSequenceAcquisition()
-    
-    with NIDAQ() as nidaq:
-        nidaq.trigger(False)
+
+    if nidaq._io == "output": 
+    # reset NIDAQ output trigger state
+        with NIDAQ() as nidaq:
+            nidaq.trigger(False)
         
-    print(f"Average framerate: {framerate} frames per second")
+    print(f"started at ctime: {time.ctime(start_time)} with Average framerate: {framerate} frames per second") # TODO sort out possible 2 second process delay between trigger and acquisition
     
     # Save images to a single TIFF stack with associated metadata
     acquisition = Output(save_dir, protocol_id, subject_id, session_id)
@@ -162,7 +174,7 @@ class MyWidget(QWidget):
         super().__init__()
         self.viewer = viewer
         self.layout = QVBoxLayout(self)
-        self._trigger_mode = False
+        self._trigger_mode = True
         
         # ==== Progress bar ==== #
         # self.progress_bar = QProgressBar(self)
@@ -189,7 +201,7 @@ class MyWidget(QWidget):
         
         # === Checkbox for trigger mode === #
         self.checkbox = QCheckBox("Wait for Trigger")
-        self.checkbox.setCheckState(False)
+        self.checkbox.setCheckState(True)
         self.checkbox.stateChanged.connect(self.set_trigger_mode)
         self.layout.addWidget(self.checkbox)
         
@@ -217,7 +229,7 @@ class MyWidget(QWidget):
         with NIDAQ() as nidaq:
             nidaq.pulse()
             
-    def set_trigger_mode(self, checked):
+    def set_trigger_mode(self, checked): # TODO have this change the acquisition trigger method
         if checked:
             self._trigger_mode = True
         else:
