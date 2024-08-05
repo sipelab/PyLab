@@ -6,7 +6,12 @@ from datetime import datetime
 from napari import Viewer, run
 from qtpy.QtWidgets import QCheckBox, QPushButton, QWidget, QVBoxLayout, QLineEdit, QLabel, QFormLayout, QProgressBar
 import nidaqmx
-
+import threading
+import collections
+import queue
+from queue import Queue
+import time
+from tqdm import tqdm
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -30,9 +35,14 @@ mmc.loadSystemConfiguration(MM_CONFIG)
 # Default parameters for file saving
 save_dir = r'F:/sbaskar/202407_SB_F31prelim_pupil'
 protocol_id = "baseline"
-subject_id = "SB"
+subject_id = "devJG"
 session_id = "01"
 num_frames = 24000
+
+###THREADING
+frame_queue = collections.deque()
+stop_event = threading.Event()
+############
 
 # Class to save frames as a TIFF stack with timestamps
 class Output:
@@ -112,8 +122,74 @@ class NIDAQ:
         time.sleep(duration)
         self.trigger(False)
 
+
+class FrameSavingThread3(threading.Thread):
+    def __init__(self, frame_queue, stop_event, filename):
+        super().__init__()
+        self.frame_queue = frame_queue
+        self.stop_event = stop_event
+        self.filename = filename
+
+    def run(self):
+        with tifffile.TiffWriter(self.filename) as tiff:
+            with tqdm(total=num_frames, desc='Saving Frames') as pbar:
+                while not self.stop_event.is_set() or not self.frame_queue.empty():
+                    try:
+                        frame = self.frame_queue.get(timeout=1)
+
+                        # Append the frame to the TIFF file
+                        tiff.write(frame) 
+                        self.frame_queue.task_done()
+                        pbar.update(1)
+                    except queue.Empty:
+                        continue    
+                pbar.clear
+
+class FrameSavingThread(threading.Thread):
+    def __init__(self, frame_deque, stop_event, filename, num_frames):
+        super().__init__()
+        self.frame_deque = frame_deque
+        self.stop_event = stop_event
+        self.filename = filename
+        self.num_frames = num_frames
+        self.lock = threading.Lock()
+
+    def run(self):
+        try:
+            with tifffile.TiffWriter(self.filename, bigtiff=True) as tiff:
+                with tqdm(total=self.num_frames, desc='Saving Frames') as pbar:
+                    while not self.stop_event.is_set() or len(self.frame_deque) > 0:
+                        frame = None
+                        with self.lock:
+                            if len(self.frame_deque) > 0:
+                                frame = self.frame_deque.popleft()
+
+                        if frame is not None: 
+                            try:
+                                tiff.write(frame, datetime=True, )
+                                pbar.update(1)
+                            except Exception as e:
+                                print(f"Error while processing frame: {e}")
+
+        except Exception as e:
+            print(f"Error while opening TIFF file: {e}")
+        finally:
+            # Ensure progress bar is properly cleared
+            pbar.close()
+            frame_queue = collections.deque()
+
+
 # Function to start the MDA sequence
 def start_acquisition(viewer, wait_for_trigger):
+
+    ###THREADING
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S') # get current timestamp
+    anat_dir = os.path.join(save_dir, f"{protocol_id}-{subject_id}", f"ses-{session_id}", "anat")
+    os.makedirs(anat_dir, exist_ok=True) # create the directory if it doesn't exist
+    output_filename = os.path.join(anat_dir, f"sub-{subject_id}_ses-{session_id}_{timestamp}.tiff")
+
+    saving_thread = FrameSavingThread(frame_queue, stop_event, output_filename, num_frames)
+    ############
 
     if wait_for_trigger:
         with NIDAQ() as nidaq:
@@ -125,13 +201,13 @@ def start_acquisition(viewer, wait_for_trigger):
                 print("Waiting for trigger...")
                 while not nidaq.task.read(): # While input signal is not True
                     time.sleep(0.1)
+    
+    saving_thread.start()
 
     print(time.ctime(time.time()), ' trigger received, starting acquisition')
     mmc.startContinuousSequenceAcquisition(0)
     time.sleep(1)  # Allow some time for the camera to start capturing images
 
-    images = []
-    metadata = []
     layer = None
     start_time = time.time()  # Start time of the acquisition
     for i in range(num_frames):
@@ -139,33 +215,29 @@ def start_acquisition(viewer, wait_for_trigger):
             time.sleep(0.1) 
             
         if mmc.getRemainingImageCount() > 0 or mmc.isSequenceRunning():
-            image = mmc.popNextImage()
-            images.append(image)
+            frame_queue.append(mmc.popNextImage())
 
-            if layer is None:
-                # Initialize the live-view layer on the first image
-                layer = viewer.add_image(image, name='Live View')
-            else:
-                layer.data = image  # Update the image layer with the new frame
-
+    mmc.stopSequenceAcquisition()
     end_time = time.time()  # End time of the acquisition
+
     elapsed_time = end_time - start_time  # Total time taken for the acquisition
     framerate = num_frames / elapsed_time  # Calculate the average framerate
-    
-    mmc.stopSequenceAcquisition()
 
-    if nidaq._io == "output": 
-    # reset NIDAQ output trigger state
-        with NIDAQ() as nidaq:
-            nidaq.trigger(False)
+    ###THREADING
+    stop_event.set()
+    saving_thread.join()
+    ############
+
+    if wait_for_trigger:
+        if nidaq._io == "output": 
+        # reset NIDAQ output trigger state
+            with NIDAQ() as nidaq:
+                nidaq.trigger(False)
         
     print(f"started at ctime: {time.ctime(start_time)} with Average framerate: {framerate} frames per second") # TODO sort out possible 2 second process delay between trigger and acquisition
     
-    # Save images to a single TIFF stack with associated metadata
-    acquisition = Output(save_dir, protocol_id, subject_id, session_id)
-    acquisition.save(images)
     # Load the final TIFF stack into the viewer
-    # viewer.add_image(np.array(images), name='Final Acquisition') #2024-08-04 This line adds several minutes after
+    # viewer.add_image(np.array(images), name='Final Acquisition') #2024-08-04 This line adds several minutes after saving
 
 
 # Custom widget class for Napari
